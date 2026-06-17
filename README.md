@@ -17,9 +17,9 @@
 | 領域       | 使用技術          |
 | ---------- | ----------------- |
 | フロントエンド | Next.js           |
-| バックエンド   | Java（Spring Boot想定） |
-| データベース   | （例: MySQL / PostgreSQL） |
-| 認証         | （例: JWT / OAuth） |
+| バックエンド   | Java（Spring Boot)|
+| データベース   | PostgreSQL |
+| 認証         | JWT / OAuth |
 
 ---
 
