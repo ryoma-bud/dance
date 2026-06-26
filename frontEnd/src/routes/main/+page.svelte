@@ -39,13 +39,14 @@
 
 {#if userInfo}
     <div class="flex min-h-screen flex-col items-center justify-center bg-[#08120e] p-6 text-white">
-        <div class="w-full max-w-[400px] rounded-3xl border border-lime-400/20 bg-bloack-40 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+        <div class="w-full max-w-[400px] rounded-3xl border border-lime-400/20 bg-black/40 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
             <h2 class="mb-6 text-center text-2xl font-bold text-lime-300">DanStar Main</h2>
 
             <div class="space-y-4 rounded-xl bg-white/5 p-6 text-sm text-green-50">
                 <p><span class="font-bold text-lime-400/70">ID:</span> {userInfo.id}</p>
                 <p><span class="font-bold text-lime-400/70">名前:</span> {userInfo.name}</p>
                 <p><span class="font-bold text-lime-400/70">Email:</span> {userInfo.email}</p>
+                <p><span class="font-bold text-lime-400/70">Role:</span> {userInfo.role}</p>
             </div>
 
             <button

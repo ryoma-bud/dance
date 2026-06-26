@@ -17,6 +17,7 @@
   let signupPasswordConfirm = $state("");
   let signupMessage = $state("");
   let isSignupError = $state(false);
+  let signupRole = $state("USER");
 
   // メール認証用状態
   let signupAuthCode = $state("");
@@ -108,6 +109,17 @@
       passwordConfirmErrorMsg = "パスワードが一致していません。";
     } else {
       passwordConfirmErrorMsg = "";
+    }
+  }
+
+  /**
+   * @param {string} selectedRole
+   */
+  function toggleRole(selectedRole) {
+    if (signupRole === selectedRole) {
+      signupRole = "USER";
+    } else {
+      signupRole = selectedRole;
     }
   }
 
@@ -435,18 +447,6 @@
     {:else}
       <!-- ================= 会員登録画面 ================= -->
       <div class="flex flex-col">
-        <label for="signup-name" class="mb-2 mt-2 text-sm text-green-50">名前</label>
-        <input
-          id="signup-name"
-          type="text"
-          bind:value={signupName}
-          oninput={validateName}
-          placeholder="DanStarで使う名前を入力してください。"
-          class="w-full rounded-2xl border border-lime-400/15 bg-[#030a07]/20 px-4 py-4 text-base text-white outline-none transition placeholder:text-green-200/35 focus:border-lime-400/60 focus:ring-4 focus:ring-lime-400/10"
-        />
-        {#if nameErrorMsg}
-          <p class="mt-1 ml-2 text-xs text-red-400">{nameErrorMsg}</p>
-        {/if}
 
         <!-- Email入力・送信 -->
         <label for="signup-email" class="mb-2 mt-4 text-sm text-green-50">Email</label>
@@ -533,6 +533,20 @@
           <p class="mt-2 text-sm text-lime-300">{codeMessage}</p>
         {/if}
 
+        <label for="signup-name" class="mb-2 mt-2 text-sm text-green-50">名前</label>
+        <input
+          id="signup-name"
+          type="text"
+          bind:value={signupName}
+          oninput={validateName}
+          placeholder="DanStarで使う名前を入力してください。"
+          class="w-full rounded-2xl border border-lime-400/15 bg-[#030a07]/20 px-4 py-4 text-base text-white outline-none transition placeholder:text-green-200/35 focus:border-lime-400/60 focus:ring-4 focus:ring-lime-400/10"
+        />
+        {#if nameErrorMsg}
+          <p class="mt-1 ml-2 text-xs text-red-400">{nameErrorMsg}</p>
+        {/if}
+
+
         <label for="signup-password" class="mb-2 mt-4 text-sm text-green-50">
           パスワード
         </label>
@@ -563,6 +577,24 @@
           <p class="mt-1 ml-2 text-xs text-red-400">{passwordConfirmErrorMsg}</p>
         {/if}
 
+        <!-- Role選択領域 -->
+        <label class="mb-2 mt-2 text-sm text-green-50">ダンサーおよび主催者の方は選択してください。</label>
+          <div class="flex gap-2">  
+            <button
+              type="button"
+              onclick={() => toggleRole("DANCER")}
+              class={`flex-1 rounded-2xl border px-2 py-3 text-sm font-bold transition ${signupRole === 'DANCER' ? 'border-lime-400 bg-lime-400/20 text-lime-300' : 'border-lime-400/15 text-green-200/50 hover:border-lime-400/30 hover:text-lime-200'}`}
+            >
+              ダンサー
+            </button>
+            <button
+              type="button"
+              onclick={() => toggleRole("ORGANIZER")}
+              class={`flex-1 rounded-2xl border px-2 py-3 text-sm font-bold transition ${signupRole === 'ORGANIZER' ? 'border-lime-400 bg-lime-400/20 text-lime-300' : 'border-lime-400/15 text-green-200/50 hover:border-lime-400/30 hover:text-lime-200'}`}
+            >
+              主催者
+            </button>
+          </div>  
         <button
           type="button"
           onclick={handleSignup}

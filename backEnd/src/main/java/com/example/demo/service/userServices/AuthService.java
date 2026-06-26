@@ -2,6 +2,7 @@ package com.example.demo.service.userServices;
 
 import com.example.demo.config.jwt.JwtTokenProvider;
 import com.example.demo.domian.dto.userDto.*;
+import com.example.demo.domian.entity.Role;
 import com.example.demo.domian.entity.UserEntity;
 import com.example.demo.domian.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,13 @@ public class AuthService {
         UserEntity userEntity = new UserEntity();
         userEntity.setName(signUpRequestDto.getName());
         userEntity.setEmail(signUpRequestDto.getEmail());
+
+        // frontEndからroleを送らなかったら、基本はUSERに設定
+        if (signUpRequestDto.getRole() != null) {
+            userEntity.setRole(signUpRequestDto.getRole());
+        } else {
+            userEntity.setRole(Role.USER);
+        }
 
         // Passwordを暗号化して保存
         String encodedPassword = passwordEncoder.encode(signUpRequestDto.getPassword());
@@ -85,12 +93,13 @@ public class AuthService {
         }
 
         // JwtTokenProviderを使用してToken生成
-        String token = jwtTokenProvider.createToken(userEntity.getEmail(), "USER");
+        String token = jwtTokenProvider.createToken(userEntity.getEmail(), userEntity.getRole().name());
 
         UserInfoDto userInfoDto = new UserInfoDto(
                 userEntity.getId(),
                 userEntity.getName(),
-                userEntity.getEmail()
+                userEntity.getEmail(),
+                userEntity.getRole().name()
         );
 
         return new LoginResponseDto(token, userInfoDto);

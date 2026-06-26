@@ -22,6 +22,10 @@ public class UserEntity {
     @Column(nullable = false)
     private String name;
 
+    @Enumerated(EnumType.STRING)    // DBに文字例（USER、ORGANIZER）に保存されるように設定
+    @Column(nullable = false)
+    private Role role = Role.USER;  // 基本は一般のUSER
+
     @Column(nullable = false, unique = true)
     private String email;
 

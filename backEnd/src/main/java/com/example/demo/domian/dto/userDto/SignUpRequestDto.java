@@ -1,5 +1,6 @@
 package com.example.demo.domian.dto.userDto;
 
+import com.example.demo.domian.entity.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -22,5 +23,7 @@ public class SignUpRequestDto {
     @NotBlank(message = "パスワードは必須です。")
     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).{8,}$", message = "パスワードは英語1文字以上、数字1文字以上、全部で8文字以上にする必要があります。")
     private String password;
+
+    private Role role;
 
 }
