@@ -68,7 +68,7 @@
     clearTimeout(nameCheckTimeout);
     nameCheckTimeout = setTimeout(async () => {
       try {
-        const response = await fetch(`http://localhost:8090/api/auth/check-name?name=${encodeURIComponent(signupName)}`);
+        const response = await fetch(`http://localhost:8080/api/auth/check-name?name=${encodeURIComponent(signupName)}`);
         const data = await response.json();
 
         if (response.ok) {
@@ -169,7 +169,7 @@
 
     try {
       // BackEndにRequest送る
-      const response = await fetch("http://localhost:8090/api/auth/login", {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type" : "application/json" },
         body: JSON.stringify({
@@ -221,7 +221,7 @@
 
     try {
       const response = await fetch(
-        "http://localhost:8090/api/auth/email/send",
+        "http://localhost:8080/api/auth/email/send",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -263,7 +263,7 @@
 
     try {
       const response = await fetch(
-        "http://localhost:8090/api/auth/email/verify",
+        "http://localhost:8080/api/auth/email/verify",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -327,7 +327,7 @@
     isSigningUp = true;
 
     try {
-      const response = await fetch("http://localhost:8090/api/auth/signup", {
+      const response = await fetch("http://localhost:8080/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

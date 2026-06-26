@@ -1,0 +1,12 @@
+FROM node:24-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+# Hostを0.0.0.0で開けておいて、ロカールブラウザからアクセス可能にする
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
