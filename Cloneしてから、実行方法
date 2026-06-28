@@ -1,3 +1,12 @@
-Spring Bootの閑居変数に以下のコード保存
+1. InteliJで Setting->Gradleを合わせる
+
+2. Project structureも合わせる
+
+3．Spring Bootの閑居変数に以下のコード保存
 JWT_SECRET_KEY=my-super-secret-key-for-danstar-application-change-this-later;MAIL_PASSWORD=dgrtyxinqsawpjtk;MAIL_USERNAME=zergling2565@gmail.com;DB_NAME=danstar;DB_PASSWORD=Inno1!
 
+4. Docker-compose up -d redis db frontendでDockerのコンテイナーを構築する
+
+5. InteliJでbackEnd起動
+
+6. frontendでnpm install & npm run devでロカールとコンテイナー同期化
