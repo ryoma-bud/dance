@@ -1,0 +1,3 @@
+Spring Bootの閑居変数に以下のコード保存
+JWT_SECRET_KEY=my-super-secret-key-for-danstar-application-change-this-later;MAIL_PASSWORD=dgrtyxinqsawpjtk;MAIL_USERNAME=zergling2565@gmail.com;DB_NAME=danstar;DB_PASSWORD=Inno1!
+
