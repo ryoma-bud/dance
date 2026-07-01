@@ -5,6 +5,7 @@
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
     import { authStore } from "../store";
+    import ChatSupport from "$lib/components/ChatSupport.svelte";
 
     let { children } = $props();
 
@@ -85,28 +86,46 @@
             {@render children()}
         </div>
 
-        <footer class="w-full bg-[#08120e]/95 border-t border-lime-400/10 py-10 px-8 z-30 relative text-gray-400">
-            <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between gap-8 text-sm">
-                <div class="flex flex-col gap-2">
-                    <h2 class="text-xl font-bold text-lime-400 mb-2">Call Center</h2>
-                    <p class="text-2xl font-bold text-white">012-345-6789</p>
-                    <p class="mt-2">勤務時間： AM 10:00 ~ PM 05:00</p>
-                    <p>土日および祝日は休ませていただきます。</p>
-                </div>
-
-                <div class="flex flex-col gap-2 text-gray-400">
-                    <h2 class="text-lg font-bold text-lime-400 mb-2">DanStar（ダンスター）</h2>
-                    <p>株式会社DanStar</p>
-                    <p>住所：三重県鈴鹿市白子2丁目</p>
-                    <p>代表者：李 仁浩、橋本 竜馬</p>
-                    <p>Email: DanStar@danstar.co.jp</p>
-                    <div class="mt-4 flex gap-4 text-lime-300 font-semibold">
-                        <a href="/privacy" class="hover:underline">個人情報処理方針</a>
-                        <a href="/terms" class="hover:underline">利用規約</a>
+        <footer class="w-full bg-[#08120e]/95 border-t border-lime-400/10 py-12 px-6 z-30 relative text-gray-400">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-sm">
+                
+                <div class="flex flex-col gap-2 md:pl-20">
+                    <h2 class="text-xl font-bold text-lime-400 mb-1">Call Center</h2>
+                    <p class="text-2xl font-bold text-white tracking-wide">012-345-6789</p>
+                    <div class="mt-1 space-y-1 text-gray-300">
+                        <p>勤務時間： AM 10:00 ~ PM 05:00</p>
+                        <p class="text-gray-500 text-xs">土日および祝日は休ませていただきます。</p>
                     </div>
                 </div>
+
+                <div class="flex flex-col gap-2 md:items-center md:text-center">
+                    <div class="flex flex-col gap-2 items-start md:items-center text-left md:text-center">
+                        <h2 class="text-xl font-bold text-lime-400 mb-1">DanStar（ダンスター）</h2>
+                        <p class="text-white font-medium">株式会社DanStar</p>
+                        <p>代表者：李 仁浩、橋本 竜馬</p>
+                        <p>住所：三重県鈴鹿市白子2丁目</p>
+                        <p>Email: DanStar@danstar.co.jp</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col justify-between items-start md:items-end text-left md:text-right min-h-[120px] md:pr-30">
+                    <div class="flex md:flex-col gap-6 md:gap-2">
+                        <a href="/privacy" class="text-lime-300 font-semibold hover:underline hover:text-lime-200 transition text-xs tracking-wider">
+                            個人情報処理方針
+                        </a>
+                        <a href="/terms" class="text-lime-300 font-semibold hover:underline hover:text-lime-200 transition text-xs tracking-wider">
+                            利用規約
+                        </a>
+                    </div>
+            
+                    <div class="hidden md:block h-8"></div>
+                </div>
+
+
             </div>
         </footer>
+
+        <ChatSupport />
     </div>
 {/if}
 
@@ -114,7 +133,7 @@
 
     .global-bg {
         background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.88)),
-            url("/images/DanStarOnlyString.png");
+            url("/images/OnlyBackground.png");
         background-repeat: no-repeat;
         background-position: center center;
         background-size: cover;
