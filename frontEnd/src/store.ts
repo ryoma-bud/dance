@@ -1,7 +1,7 @@
 // src/store.ts
 import { writable } from "svelte/store";
 
-// 백엔드의 UserInfoDto 구조와 매칭되는 인터페이스 정의
+// Backendの UserInfoDto 構造とマッチんがするInterface定義
 export interface UserInfo {
     id: number;
     name: string;
@@ -9,5 +9,5 @@ export interface UserInfo {
     role: string;
 }
 
-// 스토어 값이 UserInfo 객체이거나, 로그아웃 상태일 때는 null임을 명시
+// Storeの値がUserInfoのtypeだったり、Logoutの状態だったらNull
 export const authStore = writable<UserInfo | null>(null);
