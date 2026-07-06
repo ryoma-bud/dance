@@ -383,8 +383,13 @@
     <div class="absolute inset-0 bg-black/25"></div>
 
     <section class="relative z-10 mt-10 w-full max-w-[400px] rounded-3xl border border-lime-400/20 bg-[#08120e]/20 p-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.5),0_0_30px_rgba(57,255,20,0.08)] backdrop-blur-sm sm:mt-12 sm:max-w-[440px] sm:p-7 lg:mt-14 lg:max-w-[480px] lg:p-8">
-        <div class="mb-6 text-center">
-            <h1 class="text-3xl font-bold tracking-wide text-lime-300">DanStar</h1>
+        <div class="mb-6 text-center flex items-center flex-col">
+            <!-- <h1 class="text-3xl font-bold tracking-wide text-lime-300">DanStar</h1> -->
+            <img 
+                src="/images/DanStarLogo.png"
+                alt="Danstar Logo"
+                class="h-40 w-auto object-contain"
+            />
             <p class="mt-2 text-sm text-green-100/70">
                 {#if isSignup}
                     あなたのダンスを記録するアカウントを作ってみましょう
