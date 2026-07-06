@@ -32,9 +32,9 @@
 
 <div class="w-full h-[100vh] overflow-y-auto snap-y snap-mandatory scroll-smooth flex justify-center bg-[#FAFAFA] no-scrollbar">
         
-        <div class="relative w-full max-w-[900px] h-full flex justify-center items-center gap-12 px-4">
+        <div class="relative w-full max-w-[900px] h-full flex justify-center items-start gap-12 px-4">
             
-            <div class="flex flex-col w-full max-w-[480px] h-full justify-center">
+            <div class="flex flex-col w-full max-w-[480px]">
                 {#each videoList as video}
                     <section class="h-full min-h-[100vh] w-full snap-start flex items-center justify-center py-4 box-border">
                         <article class="relative w-full h-[calc(100vh-40px)] max-h-[860px] aspect-[9/16] bg-black rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col justify-end p-5">
@@ -124,6 +124,7 @@
     :global(.no-scrollbar) {
         -ms-overflow-style: none;
         scrollbar-width: none;
+        
     }
 </style>
 
