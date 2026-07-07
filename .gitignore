@@ -1,0 +1,6 @@
+# Environment variable
+.env
+
+# IDE Setting
+.idea/
+.vscode/
