@@ -69,7 +69,7 @@
                 <a href="/main" class="hidden sm:flex items-center gap-1 hover:text-lime-300 transition text-xs font-normal">
                     <span>➕</span> Upload
                 </a>
-                <a href="/main" class="hidden sm:flex items-center gap-1 hover:text-lime-300 transition text-xs font-normal">
+                <a href="/profile" class="hidden sm:flex items-center gap-1 hover:text-lime-300 transition text-xs font-normal">
                     <span>👤</span> Profile
                 </a>
 
