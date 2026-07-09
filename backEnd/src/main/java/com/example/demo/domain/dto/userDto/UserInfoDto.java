@@ -1,15 +1,16 @@
-package com.example.demo.domian.dto.userDto;
+package com.example.demo.domain.dto.userDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 @AllArgsConstructor
-public class SignUpResponseDto {
+public class UserInfoDto {
 
     private Long id;
     private String name;
     private String email;
-    private String message;
-
+    private String role;
 }

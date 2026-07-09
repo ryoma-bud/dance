@@ -1,10 +1,10 @@
 package com.example.demo.service.userServices;
 
 import com.example.demo.config.jwt.JwtTokenProvider;
-import com.example.demo.domian.dto.userDto.*;
-import com.example.demo.domian.entity.Role;
-import com.example.demo.domian.entity.UserEntity;
-import com.example.demo.domian.repository.UserRepository;
+import com.example.demo.domain.dto.userDto.*;
+import com.example.demo.domain.entity.Role;
+import com.example.demo.domain.entity.UserEntity;
+import com.example.demo.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

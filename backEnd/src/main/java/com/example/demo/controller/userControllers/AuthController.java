@@ -1,14 +1,13 @@
 package com.example.demo.controller.userControllers;
 
-import com.example.demo.domian.dto.userDto.LoginRequestDto;
-import com.example.demo.domian.dto.userDto.LoginResponseDto;
-import com.example.demo.domian.dto.userDto.SignUpRequestDto;
-import com.example.demo.domian.dto.userDto.SignUpResponseDto;
+import com.example.demo.domain.dto.userDto.LoginRequestDto;
+import com.example.demo.domain.dto.userDto.LoginResponseDto;
+import com.example.demo.domain.dto.userDto.SignUpRequestDto;
+import com.example.demo.domain.dto.userDto.SignUpResponseDto;
 import com.example.demo.service.userServices.AuthService;
 import com.example.demo.service.userServices.EmailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

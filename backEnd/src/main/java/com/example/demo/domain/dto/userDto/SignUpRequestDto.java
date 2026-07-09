@@ -1,6 +1,6 @@
-package com.example.demo.domian.dto.userDto;
+package com.example.demo.domain.dto.userDto;
 
-import com.example.demo.domian.entity.Role;
+import com.example.demo.domain.entity.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
