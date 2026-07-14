@@ -1,9 +1,16 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
+    import { onMount } from "svelte";
+
+    const API_BASE_URL = "http://localhost:8080";
+    const USER_ID = 1;
+    const DEFAULT_ICON_URL = "/images/ProfileIcon.png";
 
     const Role = {
         USER: "USER",
         ORGANIZER: "ORGANIZER",
+        DANCER: "DANCER",
+        ADMIN: "ADMIN",
     } as const;
 
     type Role = (typeof Role)[keyof typeof Role];
@@ -15,6 +22,7 @@
         LOCK: "LOCK",
         POP: "POP",
         HOUSE: "HOUSE",
+        KPOP: "KPOP",
         FREESTYLE: "FREESTYLE",
         OTHER: "OTHER",
     } as const;
@@ -24,6 +32,8 @@
     const roleOptions = [
         { label: "一般ユーザー", value: Role.USER },
         { label: "主催者", value: Role.ORGANIZER },
+        { label: "ダンサー", value: Role.DANCER },
+        { label: "管理者", value: Role.ADMIN },
     ];
 
     const genreOptions = [
@@ -33,6 +43,7 @@
         { label: "LOCK", value: Genre.LOCK },
         { label: "POP", value: Genre.POP },
         { label: "HOUSE", value: Genre.HOUSE },
+        { label: "KPOP", value: Genre.KPOP },
         { label: "FREESTYLE", value: Genre.FREESTYLE },
         { label: "OTHER", value: Genre.OTHER },
     ];
@@ -49,19 +60,151 @@
         birthDate: string;
     };
 
+    type UserProfileResponse = {
+        id?: number;
+        name?: string;
+        username?: string;
+        email?: string;
+        role?: string;
+        profileText?: string | null;
+        profile_text?: string | null;
+        profileImageUrl?: string | null;
+        profile_image_url?: string | null;
+        genre?: string | null;
+        birthDate?: string | null;
+        birth_date?: string | null;
+    };
+
     let form = $state<ProfileEditForm>({
-        username: "DanStar_User",
+        username: "",
         role: Role.USER,
-        email: "user@danstar.co.jp",
+        email: "",
         newPassword: "",
-        profileText: "ダンスが好きです。",
+        profileText: "",
         iconFile: null,
-        iconPreviewUrl: "/images/ProfileIcon.png",
-        genre: Genre.HIPHOP,
-        birthDate: "2000-01-01",
+        iconPreviewUrl: DEFAULT_ICON_URL,
+        genre: "",
+        birthDate: "",
     });
 
     let errorMessage = $state("");
+    let successMessage = $state("");
+    let isLoading = $state(false);
+    let isSaving = $state(false);
+
+    let shouldShowDefaultIcon = $state(false);
+    let currentObjectUrl: string | null = null;
+
+    const displayIconPreviewUrl = $derived(
+        shouldShowDefaultIcon
+            ? DEFAULT_ICON_URL
+            : form.iconPreviewUrl || DEFAULT_ICON_URL,
+    );
+
+    function isRole(value: unknown): value is Role {
+        return Object.values(Role).includes(value as Role);
+    }
+
+    function isGenre(value: unknown): value is Genre {
+        return Object.values(Genre).includes(value as Genre);
+    }
+
+    function toDateInputValue(value: string | null | undefined): string {
+        if (!value) {
+            return "";
+        }
+
+        return value.slice(0, 10);
+    }
+
+    function normalizeImageUrl(value: string | null | undefined): string {
+        if (!value || !value.trim()) {
+            return DEFAULT_ICON_URL;
+        }
+
+        const imageUrl = value.trim();
+
+        if (
+            imageUrl === "null" ||
+            imageUrl === "undefined" ||
+            imageUrl === "None"
+        ) {
+            return DEFAULT_ICON_URL;
+        }
+
+        if (
+            imageUrl.startsWith("http://") ||
+            imageUrl.startsWith("https://") ||
+            imageUrl.startsWith("data:") ||
+            imageUrl.startsWith("blob:")
+        ) {
+            return imageUrl;
+        }
+
+        if (imageUrl.startsWith("/uploads/")) {
+            return `${API_BASE_URL}${imageUrl}`;
+        }
+
+        if (imageUrl.startsWith("uploads/")) {
+            return `${API_BASE_URL}/${imageUrl}`;
+        }
+
+        if (imageUrl.startsWith("/")) {
+            return imageUrl;
+        }
+
+        return `/${imageUrl}`;
+    }
+
+    function handleIconPreviewError(event: Event) {
+        const img = event.currentTarget as HTMLImageElement;
+
+        if (img.src.endsWith(DEFAULT_ICON_URL)) {
+            return;
+        }
+
+        shouldShowDefaultIcon = true;
+        form.iconPreviewUrl = DEFAULT_ICON_URL;
+    }
+
+    async function loadProfile() {
+        isLoading = true;
+        errorMessage = "";
+        successMessage = "";
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/users/${USER_ID}/profile`);
+
+            if (!response.ok) {
+                throw new Error(`プロフィール取得に失敗しました。status=${response.status}`);
+            }
+
+            const data: UserProfileResponse = await response.json();
+
+            const role = isRole(data.role) ? data.role : Role.USER;
+            const genre = isGenre(data.genre) ? data.genre : "";
+
+            form.username = data.name ?? data.username ?? "";
+            form.email = data.email ?? "";
+            form.role = role;
+            form.profileText = data.profileText ?? data.profile_text ?? "";
+            form.iconPreviewUrl = normalizeImageUrl(
+                data.profileImageUrl ?? data.profile_image_url,
+            );
+            shouldShowDefaultIcon = false;
+            form.genre = genre;
+            form.birthDate = toDateInputValue(data.birthDate ?? data.birth_date);
+            form.newPassword = "";
+            form.iconFile = null;
+        } catch (error) {
+            console.error(error);
+            errorMessage = "プロフィール情報を取得できませんでした。APIの起動状態を確認してください。";
+            form.iconPreviewUrl = DEFAULT_ICON_URL;
+            shouldShowDefaultIcon = true;
+        } finally {
+            isLoading = false;
+        }
+    }
 
     function handleIconChange(event: Event) {
         const input = event.target as HTMLInputElement;
@@ -76,9 +219,17 @@
             return;
         }
 
+        if (currentObjectUrl) {
+            URL.revokeObjectURL(currentObjectUrl);
+        }
+
+        currentObjectUrl = URL.createObjectURL(file);
+
         form.iconFile = file;
-        form.iconPreviewUrl = URL.createObjectURL(file);
+        form.iconPreviewUrl = currentObjectUrl;
+        shouldShowDefaultIcon = false;
         errorMessage = "";
+        successMessage = "";
     }
 
     function validateForm(): boolean {
@@ -92,30 +243,79 @@
             return false;
         }
 
+        if (!form.role) {
+            errorMessage = "ロールを選択してください。";
+            return false;
+        }
+
         errorMessage = "";
         return true;
     }
 
-    function handleSubmit() {
+    async function handleSubmit() {
+        console.log("保存ボタンが押されました");
+
         if (!validateForm()) {
             return;
         }
 
-        const updatePayload = {
-            username: form.username,
+        isSaving = true;
+        errorMessage = "";
+        successMessage = "";
+
+        const profilePayload = {
+            name: form.username,
             role: form.role,
             email: form.email,
             newPassword: form.newPassword || null,
             profileText: form.profileText || null,
-            iconFile: form.iconFile,
+            profileImageUrl: form.iconPreviewUrl || null,
             genre: form.genre || null,
             birthDate: form.birthDate || null,
         };
 
-        console.log("更新内容", updatePayload);
+        const formData = new FormData();
 
-        goto("/profile");
+        formData.append(
+            "profile",
+            new Blob([JSON.stringify(profilePayload)], {
+                type: "application/json",
+            })
+        );
+
+        if (form.iconFile) {
+            formData.append("iconFile", form.iconFile);
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/users/${USER_ID}/profile`, {
+                method: "PUT",
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error(`プロフィール更新に失敗しました。status=${response.status}`);
+            }
+
+            successMessage = "プロフィールを保存しました。";
+            goto("/profile");
+        } catch (error) {
+            console.error(error);
+            errorMessage = "プロフィールを保存できませんでした。APIのURLやリクエスト形式を確認してください。";
+        } finally {
+            isSaving = false;
+        }
     }
+
+    onMount(() => {
+        loadProfile();
+
+        return () => {
+            if (currentObjectUrl) {
+                URL.revokeObjectURL(currentObjectUrl);
+            }
+        };
+    });
 </script>
 
 <div class="min-h-screen w-full overflow-y-auto bg-gray-50 px-4 py-6 sm:px-6">
@@ -160,9 +360,10 @@
                     <div class="mt-3 flex items-center gap-4">
                         <div class="avatar-box">
                             <img
-                                src={form.iconPreviewUrl}
+                                src={displayIconPreviewUrl}
                                 alt="プロフィール画像"
                                 class="avatar-img"
+                                onerror={handleIconPreviewError}
                             />
                         </div>
 
@@ -339,14 +540,6 @@
 
             <div class="border-t border-gray-100 bg-white p-4 sm:p-5">
                 <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <button
-                        type="button"
-                        onclick={() => goto("/profile")}
-                        class="w-full rounded-xl bg-gray-100 px-6 py-3 text-sm font-bold text-gray-900 transition hover:bg-gray-200 sm:w-auto"
-                    >
-                        キャンセル
-                    </button>
-
                     <button
                         type="submit"
                         class="w-full rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-emerald-600 sm:w-auto"

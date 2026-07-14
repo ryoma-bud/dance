@@ -1,99 +1,183 @@
 <script lang="ts">
-    import { fade, scale } from "svelte/transition";
-    
-    let {
-        isOpen = $bindable(false), 
-        type = 'alert',
-        title = '',
-        message = '',
-        confirmText = '確認',
-        cancelText = 'キャンセル',
-        onConfirm = () => {}, 
-        onCancel = () => {}
-    } = $props<{
+    type ModalType = "alert" | "confirm";
+    type ModalStatus = "default" | "loading" | "success" | "error";
+
+    type Props = {
         isOpen: boolean;
-        type?: 'alert' | 'confirm';
+        type?: ModalType;
+        status?: ModalStatus;
         title?: string;
         message?: string;
         confirmText?: string;
         cancelText?: string;
-        onConfirm?: () => void;
+        loadingText?: string;
+        successTitle?: string;
+        successMessage?: string;
+        errorTitle?: string;
+        errorMessage?: string;
+        onConfirm?: () => void | Promise<void>;
         onCancel?: () => void;
-    }>();
+        onClose?: () => void;
+    };
 
-    function handleConfirm() {
-        onConfirm();
-        close();
+    let {
+        isOpen = $bindable(false),
+        type = "alert",
+        status = "default",
+        title = "",
+        message = "",
+        confirmText = "OK",
+        cancelText = "キャンセル",
+        loadingText = "処理中です...",
+        successTitle = "完了",
+        successMessage = "処理が完了しました。",
+        errorTitle = "エラー",
+        errorMessage = "処理に失敗しました。",
+        onConfirm,
+        onCancel,
+        onClose,
+    }: Props = $props();
+
+    const isLoading = $derived(status === "loading");
+
+    function closeModal() {
+        if (isLoading) {
+            return;
+        }
+
+        isOpen = false;
+        onClose?.();
+    }
+
+    function handleBackdropClick() {
+        closeModal();
+    }
+
+    function stopPropagation(event: MouseEvent) {
+        event.stopPropagation();
     }
 
     function handleCancel() {
-        onCancel();
-        close();
+        if (isLoading) {
+            return;
+        }
+
+        onCancel?.();
+        closeModal();
     }
 
-    function close() {
-        isOpen = false;
-    }
+    async function handleConfirm() {
+        if (isLoading) {
+            return;
+        }
 
-    function handleKeydown(event: KeyboardEvent) {
-        if (event.key === 'Escape' && isOpen) {
-            handleCancel();
+        await onConfirm?.();
+
+        if (type === "alert" && status === "default") {
+            closeModal();
         }
     }
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
-
 {#if isOpen}
-    <div 
-        class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[3px]"
-        transition:fade={{ duration: 150 }}
-        onclick={(e) => { if (e.target === e.currentTarget) handleCancel(); }}
-        role="none"
+    <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+        role="presentation"
+        onclick={handleBackdropClick}
     >
         <div
-            class="w-full max-w-sm bg-white border border-gray-100 rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.12)] flex flex-col gap-4 text-center select-none"
-            transition:scale={{ start: 0.95, duration: 150 }}
+            class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
             role="dialog"
             aria-modal="true"
-            tabindex="0" 
+            onclick={stopPropagation}
         >
+            {#if status === "loading"}
+                <div class="flex flex-col items-center text-center">
+                    <div class="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-emerald-500"></div>
 
-            <div class="relative flex items-center min-h-8 pb-1">
-                <div class="absolute left-0 flex items-center">
-                    <img src="/images/DanStarLogo.png" alt="DanStar Logo" class="h-10 w-auto object-contain"/>
+                    <h2 class="mt-5 text-lg font-bold text-gray-900">
+                        処理中
+                    </h2>
+
+                    <p class="mt-2 text-sm leading-6 text-gray-500">
+                        {loadingText}
+                    </p>
                 </div>
-            
-                {#if title}
-                    <h3 class="w-full text-lg font-extrabold text-gray-900 tracking-tight text-center px-16"> 
-                        {title}
-                    </h3>
-                {/if}
-            </div>
+            {:else if status === "success"}
+                <div class="flex flex-col items-center text-center">
+                    <div class="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
+                        <span class="text-2xl font-bold text-emerald-600">✓</span>
+                    </div>
 
-            <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-line text-center">
-                {message}
-            </p>
+                    <h2 class="mt-5 text-lg font-bold text-gray-900">
+                        {successTitle}
+                    </h2>
 
-            <div class="flex gap-2 mt-2 w-full">
-                {#if type === 'confirm'}
+                    <p class="mt-2 text-sm leading-6 text-gray-500">
+                        {successMessage}
+                    </p>
+
                     <button
                         type="button"
-                        class="flex-1 py-3 text-sm font-semibold text-gray-500 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all duration-150 cursor-pointer border border-gray-200/50 outline-none"                
-                        onclick={handleCancel}
-                    >   
-                        {cancelText}
+                        class="mt-6 w-full rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-600"
+                        onclick={closeModal}
+                    >
+                        {confirmText}
                     </button>
-                {/if}
+                </div>
+            {:else if status === "error"}
+                <div class="flex flex-col items-center text-center">
+                    <div class="flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
+                        <span class="text-2xl font-bold text-red-600">!</span>
+                    </div>
 
-                <button
-                    type="button"
-                    class="flex-1 py-3 text-sm font-bold bg-linear-to-r from-[#9EFF00] to-[#7EDF00] hover:brightness-105 active:scale-[0.98] rounded-xl transition-all duration-150 shadow-[0_4px_12px_rgba(158,255,0,0.3)] text-black cursor-pointer border-none outline-none"
-                    onclick={handleConfirm}
-                >
-                    {confirmText}
-                </button>
-            </div>
+                    <h2 class="mt-5 text-lg font-bold text-gray-900">
+                        {errorTitle}
+                    </h2>
+
+                    <p class="mt-2 text-sm leading-6 text-gray-500">
+                        {errorMessage}
+                    </p>
+
+                    <button
+                        type="button"
+                        class="mt-6 w-full rounded-xl bg-red-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-red-600"
+                        onclick={closeModal}
+                    >
+                        閉じる
+                    </button>
+                </div>
+            {:else}
+                <div class="text-center">
+                    <h2 class="text-lg font-bold text-gray-900">
+                        {title}
+                    </h2>
+
+                    <p class="mt-3 text-sm leading-6 text-gray-500">
+                        {message}
+                    </p>
+                </div>
+
+                <div class="mt-6 flex gap-3">
+                    {#if type === "confirm"}
+                        <button
+                            type="button"
+                            class="w-full rounded-xl bg-gray-100 px-4 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-200"
+                            onclick={handleCancel}
+                        >
+                            {cancelText}
+                        </button>
+                    {/if}
+
+                    <button
+                        type="button"
+                        class="w-full rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-600"
+                        onclick={handleConfirm}
+                    >
+                        {confirmText}
+                    </button>
+                </div>
+            {/if}
         </div>
     </div>
 {/if}
