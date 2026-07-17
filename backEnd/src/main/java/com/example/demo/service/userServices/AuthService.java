@@ -1,11 +1,18 @@
 package com.example.demo.service.userServices;
 
 import com.example.demo.config.jwt.JwtTokenProvider;
+<<<<<<< HEAD
 import com.example.demo.domian.dto.userDto.*;
 import com.example.demo.domian.entity.Role;
 import com.example.demo.domian.entity.UserEntity;
 import com.example.demo.domian.repository.UserRepository;
 import jakarta.validation.constraints.Email;
+=======
+import com.example.demo.domain.dto.userDto.*;
+import com.example.demo.domain.entity.Role;
+import com.example.demo.domain.entity.UserEntity;
+import com.example.demo.domain.repository.UserRepository;
+>>>>>>> dev
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

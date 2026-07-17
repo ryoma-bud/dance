@@ -5,11 +5,11 @@
     let isConfirmOpen = $state(false);
 
     function handleConfirmAction() {
-        console.log('확인 버튼을 누름');
+        console.log('確認ボタンを押す');
     }
 
     function handleCancelAction() {
-        console.log('취소 버튼을 누름');
+        console.log('キャンセルボタンを押す');
     }
 </script>
 
@@ -22,7 +22,7 @@
     </button>
 </div>
 
-<!-- 1. 단순 확인용 알림 -->
+<!-- 1. Alert Modal -->
 <Modal 
     bind:isOpen={isAlertOpen}
     type="alert"
@@ -31,7 +31,7 @@
     confirmText="確認"
 />
 
-<!-- 2. Yes / No 선택 모달 -->
+<!-- 2. Confirm Modal -->
 <Modal 
     bind:isOpen={isConfirmOpen}
     type="confirm"
