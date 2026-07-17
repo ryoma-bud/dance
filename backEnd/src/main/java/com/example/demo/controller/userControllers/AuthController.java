@@ -24,7 +24,7 @@ public class AuthController {
     private final EmailService emailService;
 
     // ###################################
-    // 認証番号発送要請
+    // 会員登録時の認証番号発送要請
     // ###################################
     @PostMapping("/email/send")
     public ResponseEntity<?> sendEmail(@RequestBody Map<String, String> request) {
@@ -69,11 +69,68 @@ public class AuthController {
     // SignUp
     // ###################################
     @PostMapping("/signup")
-    public ResponseEntity<SignUpResponseDto> signUp(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
+    public ResponseEntity<?> signUp(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
 
-        SignUpResponseDto signUpResponseDto = authService.signUp(signUpRequestDto);
+        try {
+            SignUpResponseDto signUpResponseDto = authService.signUp(signUpRequestDto, emailService);
+            return ResponseEntity.status(HttpStatus.CREATED).body(signUpResponseDto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(signUpResponseDto);
+    // ##########################
+    // パスワード再設定用の認証番号発送
+    // ##########################
+    @PostMapping("/password/email/send")
+    public ResponseEntity<?> sendResetPasswordEmail(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Emailを入力してください。"));
+        }
+
+        // Email存在Check（会員じゃない場合、発送拒否）
+        if (!authService.checkEmailDuplicate(email)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "登録されていないEmailです。"));
+        }
+
+        // Emailへ認証番号発送
+        boolean isResend = emailService.sendAuthCode(email);
+
+        String message = isResend
+                ? "認証番号を再送信しました。メールをご確認ください。"
+                : "認証番号を送信しました。メールをご確認ください。";
+
+        return ResponseEntity.ok(Map.of("message", message));
+    }
+
+
+    // ####################################
+    // Password再設定
+    // ####################################
+    @PostMapping("/password/reset")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String newPassword = request.get("newPassword");
+
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Emailを入力してください。"));
+        }
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "新しいパスワードを入力してください。"));
+        }
+
+        try{
+            authService.updatePasswordWithVerification(email, newPassword, emailService);
+
+            return ResponseEntity.ok(Map.of("message", "パスワードの再設定が完了しました。新しいパスワードでログインしてください。"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "パスワード再設定中にエラーが発生しました。"));
+        }
     }
 
     // ####################################

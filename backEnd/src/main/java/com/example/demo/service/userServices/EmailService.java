@@ -21,6 +21,8 @@ public class EmailService {
     private static final String AUTH_CODE_PREFIX = "AuthCode";
     private static final long AUTH_CODE_EXPIRATION = 5 * 60;    // 5分
 
+    private static final String VERIFIED_PREFIX = "Verified:";
+
     // ###########################################
     // 認証番号生成・メール発送
     // ###########################################
@@ -61,14 +63,38 @@ public class EmailService {
         String savedCode = stringRedisTemplate.opsForValue().get(AUTH_CODE_PREFIX + email);
 
         if (savedCode != null && savedCode.equals(inputCode)) {
-            // 認証成功し、Redisでは削除（再使用防止）
+            // 認証コードはすぐ削除
             stringRedisTemplate.delete(AUTH_CODE_PREFIX + email);
+
+            // 該当のEmailが認証成功状態なのを5分間記録
+            stringRedisTemplate.opsForValue().set(
+                    VERIFIED_PREFIX + email,
+                    "SUCCESS",
+                    AUTH_CODE_EXPIRATION,   // 5Minutes
+                    TimeUnit.SECONDS
+            );
             return true;
         }
         return false;
     }
 
+    // ##############################
+    // Email認証成功状態なのか確認
+    // ##############################
+    public boolean isEmailVerified(String email) {
+        return Boolean.TRUE.equals(stringRedisTemplate.hasKey(VERIFIED_PREFIX + email));
+    }
+
+    // ############################################
+    // 最終的に認証成功状態が必要なくなったらデータを完全に削除
+    // ############################################
+    public void deleteVerifiedStatus (String email) {
+        stringRedisTemplate.delete(VERIFIED_PREFIX + email);
+    }
+
+    // #########################
     // 6桁乱数生成
+    // #########################
     private String createAuthCode() {
         SecureRandom secureRandom = new SecureRandom();
         StringBuilder key = new StringBuilder();
@@ -77,4 +103,5 @@ public class EmailService {
         }
         return key.toString();
     }
+
 }

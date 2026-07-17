@@ -2,7 +2,14 @@
     import { goto } from "$app/navigation";
     import { authStore } from "../store";
 
+    // Login, Signup, FindPasswordのComponents
+    import LoginSection from "$lib/components/LoginPageComponents/LoginSection.svelte";
+    import SignupSection from "$lib/components/LoginPageComponents/SignupSection.svelte";
+    import FindPasswordSection from "$lib/components/LoginPageComponents/FindPasswordSection.svelte";
+
+    // 画面操作（会員登録、Password探し）
     let isSignup = $state(false);
+    let isFindPassword = $state(false);
 
     // ログイン用状態
     let loginEmail = $state("");
@@ -26,6 +33,25 @@
     let isSendingEmail = $state(false);
     let isVerifyingCode = $state(false);
     let isSigningUp = $state(false);
+
+    // Password探し用の状態
+    let findEmail = $state("");
+    let findAuthCode = $state("");
+    let newPassword = $state("");
+    let newPasswordConfirm = $state("");
+
+    let isFindEmailSent = $state(false);
+    let isFindEmailVerified = $state(false);
+    let isSendingFindEmail = $state(false);
+    let isVerifyingFindCode = $state(false);
+    let isResettingPassword = $state(false);
+
+    let findPasswordMessage = $state("");
+    let isFindPasswordError = $state(false);
+    let isFindingPassword = $state(false);
+
+    let findPasswordErrorMsg = $state("");
+    let findPasswordConfirmErrorMsg = $state("");
 
     // メッセージ表示用（それぞれ独立して管理）
     let emailMessage = $state("");
@@ -112,38 +138,84 @@
         }
     }
 
-    /**
-     * @param {string} selectedRole
-     */
-    function toggleRole(selectedRole) {
-        if (signupRole === selectedRole) {
-            signupRole = "USER";
+    // Password探し用のPassword検査
+    function validateFindPassword() {
+        if (!newPassword) {
+            findPasswordErrorMsg = "";
+            return;
+        }
+
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/; 
+        if (!passwordRegex.test(newPassword)) {
+            findPasswordErrorMsg = "英語1文字、数字1文字を含め、8文字以上にしてください。";
         } else {
-            signupRole = selectedRole;
+            findPasswordErrorMsg = "";
+        }
+        validateFindPasswordConfirm();
+    }
+
+    function validateFindPasswordConfirm() {
+        if (!newPasswordConfirm) {
+            findPasswordConfirmErrorMsg = "";
+            return;
+        }
+        if (newPassword !== newPasswordConfirm) {
+            findPasswordConfirmErrorMsg = "パスワードが一致していません。";
+        } else {
+            findPasswordConfirmErrorMsg = "";
         }
     }
+
+    // /**
+    //  * @param {string} selectedRole
+    //  */
+    // function toggleRole(selectedRole) {
+    //     if (signupRole === selectedRole) {
+    //         signupRole = "USER";
+    //     } else {
+    //         signupRole = selectedRole;
+    //     }
+    // }
 
     function clearMessages() {
         loginMessage = "";
         signupMessage = "";
         emailMessage = "";
         codeMessage = "";
+        findPasswordMessage = "";
         isLoginError = false;
         isSignupError = false;
         isEmailError = false;
         isCodeError = false;
+        isFindPasswordError = false;
         nameErrorMsg = "";
         passwordErrorMsg = "";
         passwordConfirmErrorMsg = "";
+        findPasswordErrorMsg = "";
+        findPasswordConfirmErrorMsg = "";
+    }
+
+    function showFindPassword() {
+        isSignup = false;
+        isFindPassword = true;
+        isFindEmailSent = false;
+        isFindEmailVerified = false;
+        findEmail = "";
+        findAuthCode = "";
+        newPassword = "";
+        newPasswordConfirm = "";
+        clearMessages();
     }
 
     function showLogin() {
         isSignup = false;
+        isFindPassword = false;
         clearMessages();
     }
 
     function showSignup() {
         isSignup = true;
+        isFindPassword = false;
         clearMessages();
         isEmailSent = false;
         isEmailVerified = false;
@@ -372,6 +444,128 @@
             isSigningUp = false;
         }
     }
+
+    // #################################
+    // Find Password
+    // #################################
+    async function sendFindAuthCode() {
+        clearMessages();
+        if (!findEmail) {
+            isFindPasswordError = true;
+            findPasswordMessage = "Emailを入力してください。";
+            return;
+        }
+
+        isSendingFindEmail = true;
+        findPasswordMessage = "認証番号を送信中...";
+
+        try {
+            const response = await fetch("http://localhost:8080/api/auth/password/email/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: findEmail }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                isFindEmailSent = true;
+                isFindPasswordError = false;
+                findPasswordMessage = data.message || "認証番号を送信しました。メールをご確認ください。";
+            } else {
+                isFindPasswordError = true;
+                findPasswordMessage = data.message || "送信に失敗しました。";
+            }
+        } catch (error) {
+            isFindPasswordError = true;
+            findPasswordMessage = "サーバと通信できませんでした。";
+        } finally {
+            isSendingFindEmail = false;
+        }
+    }
+
+    async function verifyFindAuthCode() {
+        clearMessages();
+        if (!findAuthCode) {
+            isFindPasswordError = true;
+            findPasswordMessage = "認証番号を入力してください。";
+            return;
+        }
+
+        isVerifyingFindCode = true;
+
+        try {
+            const response = await fetch("http://localhost:8080/api/auth/email/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: findEmail, code: findAuthCode }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                isFindEmailVerified = true;
+                isFindPasswordError = false;
+                findPasswordMessage = "メール認証が完了しました。新しいパスワードを設定してください。";
+            } else {
+                isFindPasswordError = true;
+                findPasswordMessage = data.message || "認証番号が間違っているか、期限切れです。";
+            }
+        } catch (error) {
+            isFindPasswordError = true;
+            findPasswordMessage = "サーバと通信できませんでした。";
+        } finally {
+            isVerifyingFindCode = false;
+        }
+    }
+
+    async function handleResetPassword() {
+        clearMessages();
+        validateFindPassword();
+        validateFindPasswordConfirm();
+
+        if (!newPassword || !newPasswordConfirm) {
+            isFindPasswordError = true;
+            findPasswordMessage = "新しいパスワードを入力してください。";
+            return;
+        }
+
+        if (findPasswordErrorMsg || findPasswordConfirmErrorMsg) {
+            isFindPasswordError = true;
+            findPasswordMessage = "パスワードの入力を確認してください。";
+            return;
+        }
+
+        isResettingPassword = true;
+
+        try {
+            const response = await fetch("http://localhost:8080/api/auth/password/reset", {
+                method: "POST",
+                headers: { "Content-Type" : "application/json" },
+                body: JSON.stringify({ 
+                    email: findEmail, 
+                    newPassword: newPassword 
+                }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                isFindPassword = false;
+                loginEmail = findEmail;
+                loginPassword = "";
+                isLoginError = false;
+                loginMessage = "パスワード再設定が完了しました。新しいパスワードでログインしてください。";
+            } else {
+                isFindPasswordError = true;
+                findPasswordMessage = data.message || "パスワード再設定に失敗しました。";
+            }
+        } catch (error) {
+            isFindPasswordError = true;
+            findPasswordMessage = "サーバと通信できませんでした。";
+        } finally {
+            isResettingPassword = false;
+        }
+    }
 </script>
 
 <svelte:head>
@@ -391,7 +585,9 @@
                 class="h-40 w-auto object-contain"
             />
             <p class="mt-2 text-sm text-green-100/70">
-                {#if isSignup}
+                {#if isFindPassword}
+                    パスワードをお忘れですか？
+                {:else if isSignup}
                     あなたのダンスを記録するアカウントを作ってみましょう
                 {:else}
                     Start your Dance with DanStar
@@ -399,235 +595,78 @@
             </p>
         </div>
 
-        {#if !isSignup}
-            <div class="flex flex-col">
-                {#if loginMessage}
-                    <p class={`mb-4 text-sm ${isLoginError ? 'text-red-400' : 'text-lime-300'}`}>{loginMessage}</p>
-                {/if}
-
-                <label for="login-email" class="mb-2 mt-2 text-sm text-green-50">Email</label>
-                <input
-                    id="login-email"
-                    type="email"
-                    bind:value={loginEmail}
-                    onkeydown={(e) => {if (e.key === 'Enter') handleLogin(); }}
-                    placeholder="Emailを入力してください。"
-                    class="w-full rounded-2xl border border-lime-400/15 bg-[#030a07]/20 px-4 py-4 text-base text-white outline-none transition placeholder:text-green-200/35 focus:border-lime-400/60 focus:ring-4 focus:ring-lime-400/10"
-                />
-
-                <label for="login-password" class="mb-2 mt-4 text-sm text-green-50">パスワード</label>
-                <input
-                    id="login-password"
-                    type="password"
-                    bind:value={loginPassword}
-                    onkeydown={(e) => {if (e.key === 'Enter') handleLogin(); }}
-                    placeholder="パスワードを入力してください"
-                    class="w-full rounded-2xl border border-lime-400/15 bg-[#030a07]/20 px-4 py-4 text-base text-white outline-none transition placeholder:text-green-200/35 focus:border-lime-400/60 focus:ring-4 focus:ring-lime-400/10"
-                />
-
-                <button
-                    type="button"
-                    onclick={handleLogin}
-                    class="mt-5 w-full rounded-2xl bg-gradient-to-br from-lime-300 to-green-400 px-4 py-4 text-base font-bold text-[#041006] shadow-[0_8px_24px_rgba(124,255,0,0.22)] transition hover:-translate-y-0.5"
-                >
-                    Login
-                </button>
-
-                <div class="relative my-6 text-center">
-                    <div class="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-lime-400/10"></div>
-                    <span class="relative bg-transparent px-3 text-xs uppercase tracking-[0.08em] text-green-200/50">or</span>
-                </div>
-
-                <div class="text-center">
-                    <button
-                        type="button"
-                        onclick={showSignup}
-                        class="text-sm font-semibold text-lime-300 transition hover:text-lime-200"
-                    >
-                        アカウントがないでしょうか？会員登録
-                    </button>
-                </div>
-            </div>
-        {:else}
-            <div class="flex flex-col">
-
-                <label for="signup-email" class="mb-2 mt-4 text-sm text-green-50">Email</label>
-                <div class="flex gap-2">
-                    <input
-                        id="signup-email"
-                        type="email"
-                        bind:value={signupEmail}
-                        placeholder="Emailを入力してください。"
-                        disabled={isEmailVerified}
-                        oninput={() => {
-                            if (!isEmailVerified) {
-                                signupAuthCode = "";
-                                isEmailSent = false;
-                                isEmailVerified = false;
-                                emailMessage = ""; 
-                                codeMessage = "";
-                            }
-                        }}
-                        class="w-full rounded-2xl border border-lime-400/15 bg-[#030a07]/20 px-4 py-4 text-base text-white outline-none transition placeholder:text-green-200/35 disabled:cursor-not-allowed disabled:opacity-60 focus:border-lime-400/60 focus:ring-4 focus:ring-lime-400/10"
-                    />
-                    <button
-                        type="button"
-                        onclick={sendAuthCode}
-                        disabled={isSendingEmail || isEmailVerified}
-                        class="shrink-0 rounded-2xl border border-lime-400/30 px-4 py-4 text-sm font-bold text-lime-300 transition hover:border-lime-300/50 hover:text-lime-200 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        {#if isEmailVerified}
-                            完了
-                        {:else if isSendingEmail}
-                            送信中
-                        {:else if isEmailSent}
-                            再送信
-                        {:else}
-                            認証送信
-                        {/if}
-                    </button>
-                </div>
+        <!-- Component組み立てるところ -->
+        {#if !isSignup && !isFindPassword}
+            <!-- LoginSection -->
+            <LoginSection 
+                bind:loginEmail 
+                bind:loginPassword 
+                {loginMessage} 
+                {isLoginError} 
+                {handleLogin} 
+                {showSignup} 
+                {showFindPassword} 
+            />
+        
+        {:else if isFindPassword}
+            <!-- FindPasswordSection -->
+            <FindPasswordSection 
+                bind:findEmail={findEmail}
+                bind:findAuthCode={findAuthCode}
+                bind:newPassword={newPassword}
+                bind:newPasswordConfirm={newPasswordConfirm}
                 
-                {#if emailMessage}
-                    <p class={`mt-2 text-sm ${isEmailError ? 'text-red-400' : 'text-lime-300'}`}>
-                        {emailMessage}
-                    </p>
-                {/if}
+                {isFindEmailSent}
+                {isFindEmailVerified}
+                {isSendingFindEmail}
+                {isVerifyingFindCode}
+                {isResettingPassword}
 
-                {#if isEmailSent && !isEmailVerified}
-                    <label for="signup-auth-code" class="mb-2 mt-4 text-sm text-green-50">
-                        認証番号
-                    </label>
-                    <div class="flex gap-2">
-                        <input
-                            id="signup-auth-code"
-                            type="text"
-                            bind:value={signupAuthCode}
-                            placeholder="メールで届いた認証番号を入力してください。"
-                            class="w-full rounded-2xl border border-lime-400/15 bg-[#030a07]/20 px-4 py-4 text-base text-white outline-none transition placeholder:text-green-200/35 focus:border-lime-400/60 focus:ring-4 focus:ring-lime-400/10"
-                        />
-                        <button
-                            type="button"
-                            onclick={verifyAuthCode}
-                            disabled={isVerifyingCode}
-                            class="shrink-0 rounded-2xl border border-lime-400/30 px-4 py-4 text-sm font-bold text-lime-300 transition hover:border-lime-300/50 hover:text-lime-200 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {#if isVerifyingCode}
-                                確認中
-                            {:else}
-                                確認
-                            {/if}
-                        </button>
-                    </div>
-                    
-                    {#if codeMessage}
-                        <p class={`mt-2 text-sm ${isCodeError ? 'text-red-400' : 'text-lime-300'}`}>
-                            {codeMessage}
-                        </p>
-                    {/if}
-                {/if}
+                {findPasswordMessage}
+                {isFindPasswordError}
+                {findPasswordErrorMsg}
+                {findPasswordConfirmErrorMsg}
 
-                {#if isEmailVerified && codeMessage}
-                    <p class="mt-2 text-sm text-lime-300">{codeMessage}</p>
-                {/if}
+                {sendFindAuthCode}
+                {verifyFindAuthCode}
+                {validateFindPassword}
+                {validateFindPasswordConfirm}
+                {handleResetPassword}
+                {showLogin}
+            />
 
-                <label for="signup-name" class="mb-2 mt-2 text-sm text-green-50">名前</label>
-                <input
-                    id="signup-name"
-                    type="text"
-                    bind:value={signupName}
-                    oninput={validateName}
-                    placeholder="DanStarで使う名前を入力してください。"
-                    class="w-full rounded-2xl border border-lime-400/15 bg-[#030a07]/20 px-4 py-4 text-base text-white outline-none transition placeholder:text-green-200/35 focus:border-lime-400/60 focus:ring-4 focus:ring-lime-400/10"
-                />
-                {#if nameErrorMsg}
-                    <p class="mt-1 ml-2 text-xs text-red-400">{nameErrorMsg}</p>
-                {/if}
+        {:else}
+            <!-- SignupSection -->
+            <SignupSection 
+                bind:signupEmail
+                bind:signupAuthCode
+                bind:signupName
+                bind:signupPassword
+                bind:signupPasswordConfirm
+                bind:signupRole
+                {isEmailSent} 
+                {isEmailVerified} 
+                {isSendingEmail} 
+                {isVerifyingCode} 
+                {isSigningUp}
+                {emailMessage} 
+                {isEmailError} 
+                {codeMessage} 
+                {isCodeError}
+                {nameErrorMsg} 
+                {passwordErrorMsg} 
+                {passwordConfirmErrorMsg}
+                {signupMessage}
+                {isSignupError}
+                {sendAuthCode} 
+                {verifyAuthCode} 
+                {validateName} 
+                {validatePassword} 
+                {validatePasswordConfirm} 
+                {handleSignup} 
+                {showLogin}
+            />
 
-
-                <label for="signup-password" class="mb-2 mt-4 text-sm text-green-50">
-                    パスワード
-                </label>
-                <input
-                    id="signup-password"
-                    type="password"
-                    bind:value={signupPassword}
-                    oninput={validatePassword}
-                    placeholder="パスワードを入力してください。"
-                    class="w-full rounded-2xl border border-lime-400/15 bg-[#030a07]/20 px-4 py-4 text-base text-white outline-none transition placeholder:text-green-200/35 focus:border-lime-400/60 focus:ring-4 focus:ring-lime-400/10"
-                />
-                {#if passwordErrorMsg}
-                    <p class="mt-1 ml-2 text-xs text-red-400">{passwordErrorMsg}</p>
-                {/if}
-
-                <label for="signup-password-confirm" class="mb-2 mt-4 text-sm text-green-50">
-                    パスワード再入力
-                </label>
-                <input
-                    id="signup-password-confirm"
-                    type="password"
-                    bind:value={signupPasswordConfirm}
-                    oninput={validatePasswordConfirm}
-                    placeholder="パスワードを再入力してください。"
-                    class="w-full rounded-2xl border border-lime-400/15 bg-[#030a07]/20 px-4 py-4 text-base text-white outline-none transition placeholder:text-green-200/35 focus:border-lime-400/60 focus:ring-4 focus:ring-lime-400/10"
-                />
-                {#if passwordConfirmErrorMsg}
-                    <p class="mt-1 ml-2 text-xs text-red-400">{passwordConfirmErrorMsg}</p>
-                {/if}
-
-                <label class="mb-2 mt-2 text-sm text-green-50">ダンサーおよび主催者の方は選択してください。</label>
-                <div class="flex gap-2">  
-                    <button
-                        type="button"
-                        onclick={() => toggleRole("DANCER")}
-                        class={`flex-1 rounded-2xl border px-2 py-3 text-sm font-bold transition ${signupRole === 'DANCER' ? 'border-lime-400 bg-lime-400/20 text-lime-300' : 'border-lime-400/15 text-green-200/50 hover:border-lime-400/30 hover:text-lime-200'}`}
-                    >
-                        ダンサー
-                    </button>
-                    <button
-                        type="button"
-                        onclick={() => toggleRole("ORGANIZER")}
-                        class={`flex-1 rounded-2xl border px-2 py-3 text-sm font-bold transition ${signupRole === 'ORGANIZER' ? 'border-lime-400 bg-lime-400/20 text-lime-300' : 'border-lime-400/15 text-green-200/50 hover:border-lime-400/30 hover:text-lime-200'}`}
-                    >
-                        主催者
-                    </button>
-                </div>  
-                <button
-                    type="button"
-                    onclick={handleSignup}
-                    disabled={isSigningUp}
-                    class="mt-5 w-full rounded-2xl border border-lime-400/30 bg-transparent px-4 py-4 text-base font-bold text-lime-300 shadow-[0_0_18px_rgba(57,255,20,0.08)] transition hover:-translate-y-0.5 hover:border-lime-300/50 hover:text-lime-200 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                    {#if isSigningUp}
-                        処理中...
-                    {:else}
-                        会員登録
-                    {/if}
-                </button>
-
-                {#if signupMessage}
-                    <p class={`mt-4 text-center text-sm ${isSignupError ? 'text-red-400' : 'text-lime-300'}`}>
-                        {signupMessage}
-                    </p>
-                {/if}
-
-                <div class="relative my-6 text-center">
-                    <div class="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-lime-400/10"></div>
-                    <span class="relative bg-[#08120e99] px-3 text-xs uppercase tracking-[0.08em] text-green-200/50">
-                        or
-                    </span>
-                </div>
-
-                <div class="text-center">
-                    <button
-                        type="button"
-                        onclick={showLogin}
-                        class="text-sm font-semibold text-lime-300 transition hover:text-lime-200"
-                    >
-                        もうアカウントをお持ちでしょうか？ログイン画面に戻る
-                    </button>
-                </div>
-            </div>
         {/if}
     </section>
 </div>

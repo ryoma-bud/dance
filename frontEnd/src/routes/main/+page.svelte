@@ -117,7 +117,7 @@
 {/if}
 
 <style>
-    /* 미관용 스크롤바 숨김 유틸리티 */
+    /* ScroolBar隠すため */
     :global(.no-scrollbar::-webkit-scrollbar) {
         display: none;
     }

@@ -5,9 +5,11 @@ import com.example.demo.domian.dto.userDto.*;
 import com.example.demo.domian.entity.Role;
 import com.example.demo.domian.entity.UserEntity;
 import com.example.demo.domian.repository.UserRepository;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,16 +22,22 @@ public class AuthService {
     // ###################################
     // SignUp
     // ###################################
-    public SignUpResponseDto signUp(SignUpRequestDto signUpRequestDto) {
-
-        // 名前重複チェック
-        if (userRepository.existsByName(signUpRequestDto.getName())) {
-            throw new IllegalArgumentException("すでに使用されている名前です。");
-        }
+    public SignUpResponseDto signUp(SignUpRequestDto signUpRequestDto, EmailService emailService) {
 
         // Email重複チェック
         if(userRepository.existsByEmail(signUpRequestDto.getEmail())) {
             throw new IllegalArgumentException("もう登録されているEmailです。");
+        }
+
+        // Email認証成功状態確認
+        boolean isVerified = emailService.isEmailVerified(signUpRequestDto.getEmail());
+        if (!isVerified) {
+            throw new IllegalArgumentException("Emailの認証が完了していません。");
+        }
+
+        // 名前重複チェック
+        if (userRepository.existsByName(signUpRequestDto.getName())) {
+            throw new IllegalArgumentException("すでに使用されている名前です。");
         }
 
         // Entityに変換する
@@ -49,6 +57,9 @@ public class AuthService {
         userEntity.setPassword(encodedPassword);
 
         UserEntity savedUser = userRepository.save(userEntity);
+
+        // 最終的に会員登録を完了したら完了FlagはRedisから削除
+        emailService.deleteVerifiedStatus(signUpRequestDto.getEmail());
 
         // Response DTOに変換して Return
         return new SignUpResponseDto(
@@ -103,6 +114,31 @@ public class AuthService {
         );
 
         return new LoginResponseDto(token, userInfoDto);
+    }
+
+    // ####################################
+    // Password 再設定
+    // ####################################
+    @Transactional
+    public void updatePasswordWithVerification(String email, String newPassword, EmailService emailService) {
+
+        // 加入しているUSERなのか確認
+        UserEntity userEntity = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("登録されていないEmailです。"));
+
+        // 入力した認証コードが正しいか確認
+        boolean isValid = emailService.isEmailVerified(email);
+        if (!isValid) {
+            throw new IllegalArgumentException("認証番号が一致しないか、有効期限が切れました。");
+        }
+
+        // 新しいPasswordを暗号化後、保存
+        userEntity.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(userEntity);
+
+        // 完了FlagをRedisから削除
+        emailService.deleteVerifiedStatus(email);
+
     }
 
 }

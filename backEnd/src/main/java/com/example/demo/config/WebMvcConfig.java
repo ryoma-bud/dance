@@ -10,7 +10,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry resourceHandlerRegistry) {
 
-        // Browserから /uploads/ 로 시작하는 주소로 요청이 오면
+        // Browserから /uploads/ で始まるURLからRequestが来たら
         resourceHandlerRegistry.addResourceHandler("/uploads/**")
                 // ローカルのパソコンの C:/dance_uploads/ Folderからファイルを探す.
                 .addResourceLocations("file:///C:/dance_uploads/");

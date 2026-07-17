@@ -64,9 +64,9 @@ HTML
                 
                 <div class="h-[1px] bg-gray-100 my-4"></div>
 
-                <a href="/main" class="flex items-center gap-3 px-4 py-2 text-xs font-normal hover:text-emerald-600 transition">
+                <!-- <a href="/main" class="flex items-center gap-3 px-4 py-2 text-xs font-normal hover:text-emerald-600 transition">
                     <img src="/images/UploadIcon.png" alt="Upload Icon" class="w-4 h-4 object-contain"/>Upload
-                </a>
+                </a> -->
                 <a href="/profile" class="flex items-center gap-3 px-4 py-2 text-xs font-normal hover:text-emerald-600 transition">
                     <img src="/images/ProfileIcon.png" alt="Profile Icon" class="w-4 h-4 object-contain" /> Profile
                 </a>
