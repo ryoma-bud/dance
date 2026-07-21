@@ -1,4 +1,3 @@
-HTML
 <script lang="ts">
     import "./layout.css";
     import favicon from "$lib/assets/favicon.svg";
@@ -44,8 +43,10 @@ HTML
     <div class="min-h-dvh w-full bg-[#FAFAFA] text-gray-950 font-sans">
         <!-- 左側のSidebar -->
         <aside class="fixed top-0 left-0 bottom-0 z-40 flex w-64 flex-col overflow-y-auto border-r border-gray-200/80 bg-white text-gray-800 shadow-[2px_0_12px_rgba(0,0,0,0.02)]">
+            
             <!-- Logo領域 -->
-            <div
+            <button
+                type="button"
                 class="flex cursor-pointer justify-center border-b border-gray-100 p-6"
                 onclick={() => goto("/main")}
             >
@@ -54,10 +55,9 @@ HTML
                     alt="DanStar Logo"
                     class="h-25 w-auto object-contain"
                 />
-            </div>
+            </button>
 
             <!-- Menuたち -->
-<<<<<<< HEAD
             <nav class="flex-1 px-4 py-6 flex flex-col gap-1 text-sm font-semibold text-gray-600">
                 <a href="/dance" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition">
                     <img src="/images/DancTeamIcon.png" alt="Dance Team Icon" class="w-10 h-10 object-contain scale-125" />Dance Team一覧
@@ -76,69 +76,6 @@ HTML
                 </a> -->
                 <a href="/profile" class="flex items-center gap-3 px-4 py-2 text-xs font-normal hover:text-emerald-600 transition">
                     <img src="/images/ProfileIcon.png" alt="Profile Icon" class="w-4 h-4 object-contain" /> Profile
-=======
-            <nav class="flex flex-1 flex-col gap-1 px-4 py-6 text-sm font-semibold text-gray-600">
-                <a
-                    href="/dance"
-                    class="flex items-center gap-3 rounded-xl px-4 py-3 transition hover:bg-emerald-50 hover:text-emerald-600"
-                >
-                    <img
-                        src="/images/DancTeamIcon.png"
-                        alt="Dance Team Icon"
-                        class="h-10 w-10 scale-125 object-contain"
-                    />
-                    Dance Team一覧
->>>>>>> dev
-                </a>
-
-                <a
-                    href="/about"
-                    class="flex items-center gap-3 rounded-xl px-4 py-3 transition hover:bg-emerald-50 hover:text-emerald-600"
-                >
-                    <img
-                        src="/images/EventIcon.png"
-                        alt="Event Icon"
-                        class="h-10 w-10 scale-125 object-contain"
-                    />
-                    Event一覧
-                </a>
-
-                <a
-                    href="/community"
-                    class="flex items-center gap-3 rounded-xl px-4 py-3 transition hover:bg-emerald-50 hover:text-emerald-600"
-                >
-                    <img
-                        src="/images/CommunityIcon.png"
-                        alt="Community Icon"
-                        class="h-10 w-10 scale-125 object-contain"
-                    />
-                    Community
-                </a>
-
-                <div class="my-4 h-[1px] bg-gray-100"></div>
-
-                <a
-                    href="/main"
-                    class="flex items-center gap-3 px-4 py-2 text-xs font-normal transition hover:text-emerald-600"
-                >
-                    <img
-                        src="/images/UploadIcon.png"
-                        alt="Upload Icon"
-                        class="h-4 w-4 object-contain"
-                    />
-                    Upload
-                </a>
-
-                <a
-                    href="/profile"
-                    class="flex items-center gap-3 px-4 py-2 text-xs font-normal transition hover:text-emerald-600"
-                >
-                    <img
-                        src="/images/ProfileIcon.png"
-                        alt="Profile Icon"
-                        class="h-4 w-4 object-contain"
-                    />
-                    Profile
                 </a>
 
                 <button
