@@ -1,5 +1,6 @@
-package com.example.demo.domain.entity;
+package com.example.demo.domain.entity.genre;
 
+import com.example.demo.domain.entity.UserEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

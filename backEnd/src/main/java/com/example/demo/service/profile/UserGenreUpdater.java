@@ -1,7 +1,7 @@
 package com.example.demo.service.profile;
 
 import com.example.demo.common.normalizer.GenreNormalizer;
-import com.example.demo.domain.entity.GenreEntity;
+import com.example.demo.domain.entity.genre.GenreEntity;
 import com.example.demo.domain.entity.UserEntity;
 import com.example.demo.domain.repository.profile.GenreRepository;
 import org.springframework.stereotype.Component;

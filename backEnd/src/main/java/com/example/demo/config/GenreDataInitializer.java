@@ -1,6 +1,6 @@
 package com.example.demo.config;
 
-import com.example.demo.domain.entity.GenreEntity;
+import com.example.demo.domain.entity.genre.GenreEntity;
 import com.example.demo.domain.repository.profile.GenreRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

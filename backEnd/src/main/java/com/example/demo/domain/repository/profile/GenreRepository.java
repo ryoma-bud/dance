@@ -1,6 +1,6 @@
 package com.example.demo.domain.repository.profile;
 
-import com.example.demo.domain.entity.GenreEntity;
+import com.example.demo.domain.entity.genre.GenreEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;

@@ -1,5 +1,7 @@
 package com.example.demo.domain.entity;
 
+import com.example.demo.domain.entity.genre.GenreEntity;
+import com.example.demo.domain.entity.genre.UserGenreEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

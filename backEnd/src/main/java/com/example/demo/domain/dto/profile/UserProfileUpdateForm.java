@@ -1,6 +1,5 @@
 package com.example.demo.domain.dto.profile;
 
-import com.example.demo.domain.entity.Genre;
 import com.example.demo.domain.entity.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
