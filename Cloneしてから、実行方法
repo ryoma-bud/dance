@@ -10,4 +10,3 @@ JWT_SECRET_KEY=my-super-secret-key-for-danstar-application-change-this-later;MAI
 5. InteliJでbackEnd起動
 
 6. frontendでnpm install & npm run devでロカールとコンテイナー同期化
-

@@ -7,9 +7,13 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
-    boolean existsByEmail(String email);    // 会員登録時、emailが被っているかを確認
+    boolean existsByEmail(String email);
 
-    boolean existsByName(String name);  // 名前がかぶっているか確認
+    boolean existsByName(String name);
 
-    Optional<UserEntity> findByEmail(String email); // LoginしてるUserの会員情報取得用
+    Optional<UserEntity> findByEmail(String email);
+
+    boolean existsByEmailAndIdNot(String email, Long id);
+
+    boolean existsByNameAndIdNot(String name, Long id);
 }
