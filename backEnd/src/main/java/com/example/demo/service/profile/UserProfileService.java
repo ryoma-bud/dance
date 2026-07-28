@@ -1,7 +1,7 @@
 package com.example.demo.service.profile;
 
-import com.example.demo.domain.dto.profile.UserProfileResponse;
-import com.example.demo.domain.dto.profile.UserProfileUpdate;
+import com.example.demo.domain.dto.profile.UserProfileResponseForm;
+import com.example.demo.domain.dto.profile.UserProfileUpdateForm;
 import com.example.demo.domain.entity.UserEntity;
 import com.example.demo.domain.repository.profile.UserProfileRepository;
 import org.springframework.http.HttpStatus;
@@ -15,31 +15,39 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 
 import static com.example.demo.service.Common.normalizeNullableText;
 
 @Service
 public class UserProfileService {
+
     private final UserProfileRepository userProfileRepository;
+    private final UserGenreUpdater userGenreUpdater;
 
     private static final String PROFILE_ICON_URL_PREFIX = "/uploads/profile-icons";
     private static final String PROFILE_ICON_DIR = "C:/dance_uploads/profile-icons";
 
-    public UserProfileService(UserProfileRepository userProfileRepository) {
+    public UserProfileService(
+            UserProfileRepository userProfileRepository,
+            UserGenreUpdater userGenreUpdater
+    ) {
         this.userProfileRepository = userProfileRepository;
+        this.userGenreUpdater = userGenreUpdater;
     }
 
     @Transactional(readOnly = true)
-    public UserProfileResponse getProfile(Long userId) {
+    public UserProfileResponseForm getProfile(Long userId) {
         UserEntity user = findUser(userId);
         return toResponse(user);
     }
 
     @Transactional
-    public UserProfileResponse updateProfile(
+    public UserProfileResponseForm updateProfile(
             Long userId,
-            UserProfileUpdate request,
+            UserProfileUpdateForm request,
             MultipartFile iconFile
     ) {
         UserEntity user = findUser(userId);
@@ -65,8 +73,9 @@ public class UserProfileService {
         user.setEmail(email);
         user.setRole(request.role());
         user.setProfileText(normalizeNullableText(request.profileText()));
-        user.setGenre(request.genre());
         user.setBirthDate(request.birthDate());
+
+        userGenreUpdater.replaceUserGenres(user, request.genres());
 
         if (iconFile != null && !iconFile.isEmpty()) {
             String profileImageUrl = saveProfileIcon(userId, iconFile);
@@ -125,16 +134,30 @@ public class UserProfileService {
                 ));
     }
 
-    private UserProfileResponse toResponse(UserEntity user) {
-        return new UserProfileResponse(
+    private UserProfileResponseForm toResponse(UserEntity user) {
+        return new UserProfileResponseForm(
                 user.getId(),
                 user.getName(),
                 user.getRole(),
                 user.getEmail(),
                 user.getProfileText(),
                 user.getProfileImageUrl(),
-                user.getGenre(),
+                getGenreCodes(user),
                 user.getBirthDate()
         );
+    }
+
+    private List<String> getGenreCodes(UserEntity user) {
+        if (user.getUserGenres() == null) {
+            return List.of();
+        }
+
+        return user.getUserGenres().stream()
+                .sorted(Comparator.comparing(
+                        userGenre -> userGenre.getGenre().getSortOrder(),
+                        Comparator.nullsLast(Integer::compareTo)
+                ))
+                .map(userGenre -> userGenre.getGenre().getCode())
+                .toList();
     }
 }

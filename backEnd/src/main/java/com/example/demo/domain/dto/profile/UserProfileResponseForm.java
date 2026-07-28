@@ -1,18 +1,18 @@
 package com.example.demo.domain.dto.profile;
 
-import com.example.demo.domain.entity.Genre;
 import com.example.demo.domain.entity.Role;
 
 import java.time.LocalDate;
+import java.util.List;
 
-public record UserProfileResponse(
+public record UserProfileResponseForm(
         Long id,
         String name,
         Role role,
         String email,
         String profileText,
         String profileImageUrl,
-        Genre genre,
+        List<String> genres,
         LocalDate birthDate
 ) {
 }

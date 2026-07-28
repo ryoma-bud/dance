@@ -1,42 +1,59 @@
 package com.example.demo.service.profile;
 
-import com.example.demo.domain.dto.profile.UserProfileResponse;
-import com.example.demo.domain.dto.profile.UserProfileUpdate;
+import com.example.demo.domain.dto.profile.UserProfileResponseForm;
+import com.example.demo.domain.dto.profile.UserProfileUpdateForm;
 import com.example.demo.domain.entity.Role;
 import com.example.demo.domain.entity.UserEntity;
 import com.example.demo.domain.repository.UserRepository;
+import com.example.demo.exception.profile.BadRequestException;
+import com.example.demo.exception.profile.ResourceNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import com.example.demo.exception.profile.BadRequestException;
-import com.example.demo.exception.profile.ResourceNotFoundException;
+
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 public class UserProfileUpdateService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserGenreUpdater userGenreUpdater;
 
     public UserProfileUpdateService(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            UserGenreUpdater userGenreUpdater
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userGenreUpdater = userGenreUpdater;
     }
 
     @Transactional(readOnly = true)
-    public UserProfileResponse getProfile(Long userId) {
+    public UserProfileResponseForm getProfile(Long userId) {
         UserEntity user = findUser(userId);
         return toResponse(user);
     }
 
     @Transactional
-    public UserProfileResponse updateProfile(Long userId, UserProfileUpdate request) {
+    public UserProfileResponseForm updateProfile(Long userId, UserProfileUpdateForm request) {
         UserEntity user = findUser(userId);
 
-        String normalizedEmail = request.email().trim().toLowerCase();
+        String name = request.name() == null ? "" : request.name().trim();
+        String normalizedEmail = request.email() == null
+                ? ""
+                : request.email().trim().toLowerCase();
+
+        if (!StringUtils.hasText(name)) {
+            throw new BadRequestException("ユーザーネームを入力してください");
+        }
+
+        if (!StringUtils.hasText(normalizedEmail)) {
+            throw new BadRequestException("メールアドレスを入力してください");
+        }
 
         if (userRepository.existsByEmailAndIdNot(normalizedEmail, userId)) {
             throw new BadRequestException("このメールアドレスはすでに使用されています");
@@ -46,13 +63,14 @@ public class UserProfileUpdateService {
             throw new BadRequestException("プロフィール編集画面から管理者権限には変更できません");
         }
 
-        user.setName(request.name().trim());
+        user.setName(name);
         user.setEmail(normalizedEmail);
         user.setRole(request.role());
         user.setProfileText(normalizeNullableText(request.profileText()));
         user.setProfileImageUrl(normalizeNullableText(request.profileImageUrl()));
-        user.setGenre(request.genre());
         user.setBirthDate(request.birthDate());
+
+        userGenreUpdater.replaceUserGenres(user, request.genres());
 
         if (StringUtils.hasText(request.newPassword())) {
             validatePassword(request.newPassword());
@@ -68,23 +86,39 @@ public class UserProfileUpdateService {
                 .orElseThrow(() -> new ResourceNotFoundException("ユーザーが見つかりません"));
     }
 
-    private UserProfileResponse toResponse(UserEntity user) {
-        return new UserProfileResponse(
+    private UserProfileResponseForm toResponse(UserEntity user) {
+        return new UserProfileResponseForm(
                 user.getId(),
                 user.getName(),
                 user.getRole(),
                 user.getEmail(),
                 user.getProfileText(),
                 user.getProfileImageUrl(),
-                user.getGenre(),
+                getGenreCodes(user),
                 user.getBirthDate()
         );
+    }
+
+    private List<String> getGenreCodes(UserEntity user) {
+        if (user.getUserGenres() == null) {
+            return List.of();
+        }
+
+        return user.getUserGenres().stream()
+                .filter(userGenre -> userGenre.getGenre() != null)
+                .sorted(Comparator.comparing(
+                        userGenre -> userGenre.getGenre().getSortOrder(),
+                        Comparator.nullsLast(Integer::compareTo)
+                ))
+                .map(userGenre -> userGenre.getGenre().getCode())
+                .toList();
     }
 
     private String normalizeNullableText(String value) {
         if (!StringUtils.hasText(value)) {
             return null;
         }
+
         return value.trim();
     }
 

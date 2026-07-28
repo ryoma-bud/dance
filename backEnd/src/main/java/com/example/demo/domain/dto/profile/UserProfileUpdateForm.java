@@ -8,8 +8,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
+import java.util.List;
 
-public record UserProfileUpdate(
+public record UserProfileUpdateForm(
         @NotBlank(message = "ユーザー名は必須です")
         @Size(max = 50, message = "ユーザー名は50文字以内で入力してください")
         String name,
@@ -29,7 +30,7 @@ public record UserProfileUpdate(
 
         String profileImageUrl,
 
-        Genre genre,
+        List<String> genres,
 
         LocalDate birthDate
 ) {

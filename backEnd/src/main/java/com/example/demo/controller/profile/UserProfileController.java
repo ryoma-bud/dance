@@ -1,8 +1,8 @@
 package com.example.demo.controller.profile;
 
-import com.example.demo.domain.dto.profile.UserProfileUpdate;
+import com.example.demo.domain.dto.profile.UserProfileUpdateForm;
 import com.example.demo.service.profile.UserProfileService;
-import com.example.demo.domain.dto.profile.UserProfileResponse;
+import com.example.demo.domain.dto.profile.UserProfileResponseForm;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +19,7 @@ public class UserProfileController {
     }
 
     @GetMapping("/{userId}/profile")
-    public UserProfileResponse getProfile(@PathVariable Long userId) {
+    public UserProfileResponseForm getProfile(@PathVariable Long userId) {
         return userProfileService.getProfile(userId);
     }
 
@@ -27,9 +27,9 @@ public class UserProfileController {
             value = "/{userId}/profile",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    public UserProfileResponse updateProfile(
+    public UserProfileResponseForm updateProfile(
             @PathVariable Long userId,
-            @Valid @RequestPart("profile") UserProfileUpdate request,
+            @Valid @RequestPart("profile") UserProfileUpdateForm request,
             @RequestPart(value = "iconFile", required = false) MultipartFile iconFile
     ) {
         return userProfileService.updateProfile(userId, request, iconFile);
