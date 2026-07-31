@@ -68,12 +68,12 @@
                 <a href="/community" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition">
                     <img src="/images/CommunityIcon.png" alt="Community Icon" class="w-10 h-10 object-contain scale-125" />Community
                 </a>
-                
+                <a href="/follows" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition">
+                    <img src="/images/FollowIcon.png" alt="Community Icon" class="w-10 h-10 object-contain scale-125" />Follows
+                </a>
+
                 <div class="h-[1px] bg-gray-100 my-4"></div>
 
-                <!-- <a href="/main" class="flex items-center gap-3 px-4 py-2 text-xs font-normal hover:text-emerald-600 transition">
-                    <img src="/images/UploadIcon.png" alt="Upload Icon" class="w-4 h-4 object-contain"/>Upload
-                </a> -->
                 <a href="/profile" class="flex items-center gap-3 px-4 py-2 text-xs font-normal hover:text-emerald-600 transition">
                     <img src="/images/ProfileIcon.png" alt="Profile Icon" class="w-4 h-4 object-contain" /> Profile
                 </a>
