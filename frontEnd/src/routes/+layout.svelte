@@ -13,6 +13,8 @@
     // 会社情報とポリシー
     let showPolicy = $state(false);
 
+    let searchQuery = $state("");
+
     onMount(() => {
         const storedUserInfo = localStorage.getItem("userInfo");
         if (storedUserInfo) {
@@ -31,6 +33,13 @@
         authStore.set(null);
         goto("/");
     }
+
+    function handleSearch (e: KeyboardEvent) {
+        if (e.key === "Enter" && searchQuery.trim()) {
+            goto(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    }
+    
 </script>
 
 <svelte:head>
@@ -59,6 +68,23 @@
 
             <!-- Menuたち -->
             <nav class="flex-1 px-4 py-6 flex flex-col gap-1 text-sm font-semibold text-gray-600">
+
+                <!-- 検索Tag -->
+                <div class="mb-4 px-1">
+                    <div class="relative flex items-center">
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            bind:value={searchQuery}
+                            onkeydown={handleSearch}
+                            class="w-full bg-gray-100 rounded-xl pl-9 pr-3 py-2 text-xs font-normal focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition"
+                        />
+                        <svg class="w-4 h-4 text-gray-400 absolute left-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                </div>
+
                 <a href="/dance" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition">
                     <img src="/images/DancTeamIcon.png" alt="Dance Team Icon" class="w-10 h-10 object-contain scale-125" />Dance Team一覧
                 </a>
@@ -69,10 +95,10 @@
                     <img src="/images/CommunityIcon.png" alt="Community Icon" class="w-10 h-10 object-contain scale-125" />Community
                 </a>
                 <a href="/follows" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-emerald-50 hover:text-emerald-600 transition">
-                    <img src="/images/FollowIcon.png" alt="Community Icon" class="w-10 h-10 object-contain scale-125" />Follows
+                    <img src="/images/FollowIcon (2).png" alt="Community Icon" class="w-10 h-10 object-contain scale-125" />Follows
                 </a>
 
-                <div class="h-[1px] bg-gray-100 my-4"></div>
+                <div class="h-px bg-gray-100 my-4"></div>
 
                 <a href="/profile" class="flex items-center gap-3 px-4 py-2 text-xs font-normal hover:text-emerald-600 transition">
                     <img src="/images/ProfileIcon.png" alt="Profile Icon" class="w-4 h-4 object-contain" /> Profile
